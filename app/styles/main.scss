@@ -1,0 +1,33 @@
+// bower:scss
+@import "../../components/bourbon/dist/_bourbon.scss";
+// endbower
+
+@import 'base/grid-settings';
+@import "../../components/neat/app/assets/stylesheets/_neat.scss";
+@import 'base/base';
+
+.main {
+  @include outer-container;
+}
+
+.main-container {
+  @include row;
+}
+
+.main-content {
+  @include span-columns(8);
+}
+
+.landing {
+  @include outer-container;
+}
+
+.landing-container {
+  @include row;
+}
+
+.landing-content {
+  @include fill-parent;
+
+  text-align: center;
+}

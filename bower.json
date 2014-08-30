@@ -1,0 +1,10 @@
+{
+  "name": "pho3nixf1re.net",
+  "version": "0.0.0",
+  "dependencies": {
+    "bourbon": "~4.0.2",
+    "neat": "~1.6.0",
+    "lodash": "~2.4.1",
+    "fontawesome": "4.1.0"
+  }
+}

@@ -1,0 +1,17 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+
+    Matthew Turney -- Author -- @pho3nixf1re
+
+# THANKS
+
+    Brooke Turney -- My loving wife
+    Esther Turney -- My awesome mother
+
+# TECHNOLOGY COLOPHON
+
+    HTML5, CSS3
+    SASS, Bourbon
+    jQuery, Modernizr
