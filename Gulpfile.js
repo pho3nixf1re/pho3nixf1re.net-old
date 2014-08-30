@@ -7,6 +7,7 @@ var argv = require('yargs')
     port: '8000'
   })
   .alias({
+    d: 'dist',
     h: 'host',
     p: 'port'
   })
@@ -175,3 +176,11 @@ var useminDistPipe = lazypipe()
     html: [$.minifyHtml({ empty: true })],
     js: [$.uglify(), $.rev()]
   });
+
+gulp.task('publish', function publishTask() {
+  return gulp.src(paths.output + '/**/*')
+    .pipe($.ghPages())
+    .on('end', function deployed() {
+      gulp.start('cleanup');
+    });
+});
