@@ -133,8 +133,8 @@ gulp.task('sass', function sassTask(done){
   var distCssPipe = lazypipe()
     .pipe($.rubySass, { sourcemap: false })
     .pipe($.filter, ['*', '!*.map'])
-    .pipe($.minifyCss)
-    .pipe($.rev);
+    .pipe($.minifyCss);
+    // .pipe($.rev);
   var devCssPipe = lazypipe()
     .pipe($.rubySass, { sourcemapPath: '.' });
 
