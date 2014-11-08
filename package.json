@@ -1,7 +1,7 @@
 {
   "name": "pho3nixf1re.net",
   "description": "pho3nixf1re.net",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "main": "index.js",
   "scripts": {
     "build": "index.js"
