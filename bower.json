@@ -1,6 +1,6 @@
 {
   "name": "pho3nixf1re.net",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "dependencies": {
     "bourbon": "~4.0.2",
     "neat": "~1.6.0",
