@@ -92,7 +92,9 @@ gulp.task('smith', ['templates'], function smithTask(done) {
             delete file.frontMatter;
         })
         .pipe(gulpsmith()
-          .use(markdown())
+          .use(markdown({
+            gfm: true
+          }))
           .use(templates({
             engine: 'handlebars',
             directory: templatePath
