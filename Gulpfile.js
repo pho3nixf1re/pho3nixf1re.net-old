@@ -134,7 +134,6 @@ gulp.task('sass', function sassTask(done){
     .pipe($.rubySass, { sourcemap: false })
     .pipe($.filter, ['*', '!*.map'])
     .pipe($.minifyCss);
-    // .pipe($.rev);
   var devCssPipe = lazypipe()
     .pipe($.rubySass, { sourcemapPath: '.' });
 
@@ -156,26 +155,27 @@ gulp.task('scripts', function scriptsTask() {
 gulp.task('assets', ['sass', 'scripts']);
 
 gulp.task('templates', ['assets'], function templatesTask(done) {
+  var assets = $.useref.assets();
+  var distAssetPipe = lazypipe()
+    .pipe(function cssFiles() {
+      return $.if('*.css', $.minifyCss());
+    })
+    .pipe(function jsFiles() {
+      return $.if('*.js', $.uglify());
+    });
+  var distPipe = lazypipe()
+    .pipe($.minifyHtml, { empty: true });
+
   return gulp.src(paths.templates + '/**/*')
     .pipe($.plumber())
-      .pipe($.if(argv.dist,
-        useminDistPipe(),
-        useminPipe()
-      ))
-    .pipe($.plumber.stop())
-    .pipe(gulp.dest(paths.output + '/templates'));
+    .pipe(assets)
+      .pipe($.if(argv.dist, distAssetPipe()))
+      .pipe(gulp.dest(paths.output))
+    .pipe(assets.restore())
+    .pipe($.useref())
+    .pipe($.if(argv.dist, distPipe()))
+    .pipe($.if('*.html', gulp.dest(paths.output + '/templates')));
 });
-
-var useminPipe = lazypipe()
-  .pipe($.usemin, { outputRelativePath: '../' });
-
-var useminDistPipe = lazypipe()
-  .pipe($.usemin, {
-    outputRelativePath: '../',
-    css: [$.minifyCss(), $.rev()],
-    html: [$.minifyHtml({ empty: true })],
-    js: [$.uglify(), $.rev()]
-  });
 
 gulp.task('publish', function publishTask() {
   return gulp.src(paths.output + '/**/*')

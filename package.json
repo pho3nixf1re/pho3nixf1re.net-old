@@ -1,7 +1,7 @@
 {
   "name": "pho3nixf1re.net",
   "description": "pho3nixf1re.net",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "main": "index.js",
   "scripts": {
     "build": "index.js"
@@ -36,7 +36,7 @@
     "gulp-rimraf": "^0.1.0",
     "gulp-ruby-sass": "^0.7.1",
     "gulp-uglify": "^0.3.1",
-    "gulp-usemin": "^0.3.7",
+    "gulp-useref": "^1.0.1",
     "gulp-watch": "^0.6.9",
     "gulp-webserver": "^0.6.0",
     "gulpsmith": "^0.4.3",
