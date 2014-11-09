@@ -3,7 +3,7 @@
   "version": "0",
   "dependencies": {
     "bourbon": "~4.0.2",
-    "neat": "~1.6.0",
+    "neat": "~1.7.0",
     "lodash": "~2.4.1"
   }
 }
