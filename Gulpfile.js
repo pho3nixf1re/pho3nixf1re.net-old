@@ -52,12 +52,12 @@ gulp.task('watch', function watchTask(done) {
     paths.styles + '/**/*',
     options,
     function smithWatch(files, cb) {
-      gulp.start('sass', cb);
+      gulp.start('assets:sass', cb);
     });
   $.watch(
     paths.scripts + '/**/*', options,
     function smithWatch(files, cb) {
-      gulp.start('scripts', cb);
+      gulp.start('assets:scripts', cb);
     });
 
   done();
@@ -75,9 +75,9 @@ gulp.task('webserver', function webserverTask(done) {
 
 gulp.task('serve', ['build', 'watch', 'webserver']);
 
-gulp.task('openbrowser', function serveTask(done) {
-  opn('http://' + argv.host + ':' + argv.port);
-});
+// gulp.task('openbrowser', function serveTask(done) {
+//   opn('http://' + argv.host + ':' + argv.port);
+// });
 
 gulp.task('build', ['cleanup'], function buildTask(done) {
   gulp.start(['assets', 'smith']);
@@ -138,31 +138,26 @@ gulp.task('wiredep:sass', function wiredepSassTask() {
     .pipe(gulp.dest(destPath));
 });
 
-gulp.task('sass', function sassTask(done){
-  var destPath = paths.output + '/styles';
-  var distCssPipe = lazypipe()
-    .pipe($.rubySass, { sourcemap: false })
-    .pipe($.filter, ['*', '!*.map'])
-    .pipe($.minifyCss);
-  var devCssPipe = lazypipe()
-    .pipe($.rubySass, { sourcemapPath: '.' });
+gulp.task('assets', ['assets:sass', 'assets:scripts']);
 
-  return gulp.src(paths.styles + '/main.scss')
+gulp.task('assets:sass', function sassTask(done){
+  var destPath = paths.output + '/styles';
+
+  return $.rubySass(paths.styles + '/main.scss', { sourcemap: true })
     .pipe($.plumber())
-      .pipe($.if(argv.dist,
-        distCssPipe(),
-        devCssPipe()
-      ))
+      .pipe($.if(argv.dist, $.minifyCss()))
+      .pipe($.sourcemaps.write())
     .pipe($.plumber.stop())
     .pipe(gulp.dest(destPath));
 });
 
-gulp.task('scripts', function scriptsTask() {
-  return gulp.src(paths.scripts + '/**/*')
+gulp.task('assets:scripts', function scriptsTask() {
+  return gulp.src(paths.scripts + '/**/*.js')
+    .pipe($.sourcemaps.init())
+      .pipe($.uglify())
+    .pipe($.sourcemaps.write())
     .pipe(gulp.dest(paths.output + '/scripts'));
 });
-
-gulp.task('assets', ['sass', 'scripts']);
 
 gulp.task('templates', ['assets'], function templatesTask(done) {
   var assets = $.useref.assets();
