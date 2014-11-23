@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('lodash');
 var async = require('async');
 var argv = require('yargs')
@@ -13,14 +15,15 @@ var argv = require('yargs')
   })
   .argv;
 
+// gulp
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 var runSequence = require('run-sequence');
 var wiredep = require('wiredep').stream;
 var lazypipe = require('lazypipe');
-var gulpsmith = require('gulpsmith');
 
-var markdown = require('metalsmith-markdown');
+// metalsmith
+var gulpsmith = require('gulpsmith');
 var templates = require('metalsmith-templates');
 
 var paths = {
@@ -93,14 +96,13 @@ gulp.task('smith', ['templates'], function smithTask(done) {
   gulp.src(paths.content + '/**/*')
     .pipe($.plumber())
       .pipe(filterRenderable)
-        .pipe($.frontMatter()).on('data', function(file) {
+        .pipe($.frontMatter())
+        .on('data', function(file) {
             _.assign(file, file.frontMatter);
             delete file.frontMatter;
         })
+        .pipe($.marked({ gfm: true }))
         .pipe(gulpsmith()
-          .use(markdown({
-            gfm: true
-          }))
           .use(templates({
             engine: 'handlebars',
             directory: templatePath
