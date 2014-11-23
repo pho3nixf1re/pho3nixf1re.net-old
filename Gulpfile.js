@@ -40,16 +40,22 @@ gulp.task('watch', function watchTask(done) {
   };
 
   $.watch(
-    _.merge(
-      {
-        glob: [paths.content + '/**/*', paths.templates + '/**/*']
-      },
-      options
-    ),
-    ['smith']
-  );
-  $.watch(_.merge({ glob: paths.styles + '/**/*' }, options), ['sass']);
-  $.watch(_.merge({ glob: paths.scripts + '/**/*' }, options), ['scripts']);
+    [paths.content + '/**/*', paths.templates + '/**/*'],
+    options,
+    function smithWatch(files, cb) {
+      gulp.start('smith', cb);
+    });
+  $.watch(
+    paths.styles + '/**/*',
+    options,
+    function smithWatch(files, cb) {
+      gulp.start('sass', cb);
+    });
+  $.watch(
+    paths.scripts + '/**/*', options,
+    function smithWatch(files, cb) {
+      gulp.start('scripts', cb);
+    });
 
   done();
 });
