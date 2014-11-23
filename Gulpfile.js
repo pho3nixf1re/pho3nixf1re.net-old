@@ -97,9 +97,9 @@ gulp.task('smith', ['templates'], function smithTask(done) {
     .pipe($.plumber())
       .pipe(filterRenderable)
         .pipe($.frontMatter())
-        .on('data', function(file) {
-            _.assign(file, file.frontMatter);
-            delete file.frontMatter;
+        .on('data', function (file) {
+          _.assign(file, file.frontMatter);
+          delete file.frontMatter;
         })
         .pipe($.marked({ gfm: true }))
         .pipe(gulpsmith()
@@ -140,7 +140,7 @@ gulp.task('wiredep:sass', function wiredepSassTask() {
 
 gulp.task('assets', ['assets:sass', 'assets:scripts']);
 
-gulp.task('assets:sass', function sassTask(done){
+gulp.task('assets:sass', function sassTask(done) {
   var destPath = paths.output + '/styles';
 
   return $.rubySass(paths.styles + '/main.scss', { sourcemap: true })
@@ -188,4 +188,14 @@ gulp.task('publish', function publishTask() {
     .on('end', function deployed() {
       gulp.start('cleanup');
     });
+});
+
+gulp.task('lint', function lintTask() {
+  return gulp.src([
+    paths.scripts + '/**/*.js',
+    __filename
+  ])
+    .pipe($.jshint())
+    .pipe($.jshint.reporter('jshint-stylish'))
+    .pipe($.jscs());
 });

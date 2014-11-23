@@ -56,7 +56,7 @@
       "components/**",
       "coverage/**",
       "build/**",
-      ".tmp/**"
-      "sass-cache/**",
+      ".tmp/**",
+      "sass-cache/**"
   ]
 }
