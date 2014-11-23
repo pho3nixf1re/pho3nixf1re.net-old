@@ -1,5 +1,8 @@
+'use strict';
+
 var _ = require('lodash');
 var async = require('async');
+var notifier = require('node-notifier');
 var argv = require('yargs')
   .default({
     dist: false,
@@ -13,14 +16,15 @@ var argv = require('yargs')
   })
   .argv;
 
+// gulp
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 var runSequence = require('run-sequence');
 var wiredep = require('wiredep').stream;
 var lazypipe = require('lazypipe');
-var gulpsmith = require('gulpsmith');
 
-var markdown = require('metalsmith-markdown');
+// metalsmith
+var gulpsmith = require('gulpsmith');
 var templates = require('metalsmith-templates');
 
 var paths = {
@@ -38,23 +42,41 @@ gulp.task('watch', function watchTask(done) {
   var options = {
     emitOnGlob: false
   };
+  var watcherNotify = function watcherNotify(message) {
+    notifier.notify({
+      title: 'Gulp watcher',
+      message: message
+    });
+  };
 
   $.watch(
     [paths.content + '/**/*', paths.templates + '/**/*'],
     options,
     function smithWatch(files, cb) {
-      gulp.start('smith', cb);
+      watcherNotify('Start smithing');
+      gulp.start('smith', function smithWatchCallback() {
+        watcherNotify('Finished smithing');
+        cb();
+      });
     });
   $.watch(
     paths.styles + '/**/*',
     options,
-    function smithWatch(files, cb) {
-      gulp.start('sass', cb);
+    function sassWatch(files, cb) {
+      watcherNotify('Start assets:sass');
+      gulp.start('assets:sass', function () {
+        watcherNotify('Finished assets:sass');
+        cb();
+      });
     });
   $.watch(
     paths.scripts + '/**/*', options,
-    function smithWatch(files, cb) {
-      gulp.start('scripts', cb);
+    function scriptsWatch(files, cb) {
+      watcherNotify('Start assets:scripts');
+      gulp.start('assets:scripts', function () {
+        watcherNotify('Finished assets:scripts');
+        cb();
+      });
     });
 
   done();
@@ -72,9 +94,9 @@ gulp.task('webserver', function webserverTask(done) {
 
 gulp.task('serve', ['build', 'watch', 'webserver']);
 
-gulp.task('openbrowser', function serveTask(done) {
-  opn('http://' + argv.host + ':' + argv.port);
-});
+// gulp.task('openbrowser', function serveTask(done) {
+//   opn('http://' + argv.host + ':' + argv.port);
+// });
 
 gulp.task('build', ['cleanup'], function buildTask(done) {
   gulp.start(['assets', 'smith']);
@@ -93,14 +115,13 @@ gulp.task('smith', ['templates'], function smithTask(done) {
   gulp.src(paths.content + '/**/*')
     .pipe($.plumber())
       .pipe(filterRenderable)
-        .pipe($.frontMatter()).on('data', function(file) {
-            _.assign(file, file.frontMatter);
-            delete file.frontMatter;
+        .pipe($.frontMatter())
+        .on('data', function (file) {
+          _.assign(file, file.frontMatter);
+          delete file.frontMatter;
         })
+        .pipe($.marked({ gfm: true }))
         .pipe(gulpsmith()
-          .use(markdown({
-            gfm: true
-          }))
           .use(templates({
             engine: 'handlebars',
             directory: templatePath
@@ -136,31 +157,26 @@ gulp.task('wiredep:sass', function wiredepSassTask() {
     .pipe(gulp.dest(destPath));
 });
 
-gulp.task('sass', function sassTask(done){
-  var destPath = paths.output + '/styles';
-  var distCssPipe = lazypipe()
-    .pipe($.rubySass, { sourcemap: false })
-    .pipe($.filter, ['*', '!*.map'])
-    .pipe($.minifyCss);
-  var devCssPipe = lazypipe()
-    .pipe($.rubySass, { sourcemapPath: '.' });
+gulp.task('assets', ['assets:sass', 'assets:scripts']);
 
-  return gulp.src(paths.styles + '/main.scss')
+gulp.task('assets:sass', function sassTask(done) {
+  var destPath = paths.output + '/styles';
+
+  return $.rubySass(paths.styles + '/main.scss', { sourcemap: true })
     .pipe($.plumber())
-      .pipe($.if(argv.dist,
-        distCssPipe(),
-        devCssPipe()
-      ))
+      .pipe($.if(argv.dist, $.minifyCss()))
+      .pipe($.sourcemaps.write())
     .pipe($.plumber.stop())
     .pipe(gulp.dest(destPath));
 });
 
-gulp.task('scripts', function scriptsTask() {
-  return gulp.src(paths.scripts + '/**/*')
+gulp.task('assets:scripts', function scriptsTask() {
+  return gulp.src(paths.scripts + '/**/*.js')
+    .pipe($.sourcemaps.init())
+      .pipe($.uglify())
+    .pipe($.sourcemaps.write())
     .pipe(gulp.dest(paths.output + '/scripts'));
 });
-
-gulp.task('assets', ['sass', 'scripts']);
 
 gulp.task('templates', ['assets'], function templatesTask(done) {
   var assets = $.useref.assets();
@@ -191,4 +207,14 @@ gulp.task('publish', function publishTask() {
     .on('end', function deployed() {
       gulp.start('cleanup');
     });
+});
+
+gulp.task('lint', function lintTask() {
+  return gulp.src([
+    paths.scripts + '/**/*.js',
+    __filename
+  ])
+    .pipe($.jshint())
+    .pipe($.jshint.reporter('jshint-stylish'))
+    .pipe($.jscs());
 });
