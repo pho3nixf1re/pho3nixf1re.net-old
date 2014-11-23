@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var async = require('async');
+var notifier = require('node-notifier');
 var argv = require('yargs')
   .default({
     dist: false,
@@ -41,23 +42,41 @@ gulp.task('watch', function watchTask(done) {
   var options = {
     emitOnGlob: false
   };
+  var watcherNotify = function watcherNotify(message) {
+    notifier.notify({
+      title: 'Gulp watcher',
+      message: message
+    });
+  };
 
   $.watch(
     [paths.content + '/**/*', paths.templates + '/**/*'],
     options,
     function smithWatch(files, cb) {
-      gulp.start('smith', cb);
+      watcherNotify('Start smithing');
+      gulp.start('smith', function smithWatchCallback() {
+        watcherNotify('Finished smithing');
+        cb();
+      });
     });
   $.watch(
     paths.styles + '/**/*',
     options,
-    function smithWatch(files, cb) {
-      gulp.start('assets:sass', cb);
+    function sassWatch(files, cb) {
+      watcherNotify('Start assets:sass');
+      gulp.start('assets:sass', function () {
+        watcherNotify('Finished assets:sass');
+        cb();
+      });
     });
   $.watch(
     paths.scripts + '/**/*', options,
-    function smithWatch(files, cb) {
-      gulp.start('assets:scripts', cb);
+    function scriptsWatch(files, cb) {
+      watcherNotify('Start assets:scripts');
+      gulp.start('assets:scripts', function () {
+        watcherNotify('Finished assets:scripts');
+        cb();
+      });
     });
 
   done();
