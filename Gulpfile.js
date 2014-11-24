@@ -201,6 +201,7 @@ gulp.task('templates', ['assets'], function templatesTask(done) {
 });
 
 gulp.task('publish', function publishTask() {
+  argv.dist = true;
   return gulp.src(paths.output + '/**/*')
     .pipe($.ghPages())
     .on('end', function deployed() {
