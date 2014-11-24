@@ -19,7 +19,6 @@ var argv = require('yargs')
 // gulp
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
-var runSequence = require('run-sequence');
 var wiredep = require('wiredep').stream;
 var lazypipe = require('lazypipe');
 
