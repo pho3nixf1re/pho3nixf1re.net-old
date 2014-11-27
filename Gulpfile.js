@@ -1,5 +1,6 @@
 'use strict';
 
+var path = require('path');
 var _ = require('lodash');
 var async = require('async');
 var notifier = require('node-notifier');
@@ -49,7 +50,10 @@ gulp.task('watch', function watchTask(done) {
     };
 
     $.watch(
-        [paths.content + '/**/*', paths.templates + '/**/*'],
+        [
+            path.join(paths.content, '**/*'),
+            path.join(paths.templates, '**/*')
+        ],
         options,
         function smithWatch(files, cb) {
             watcherNotify('Start smithing');
@@ -59,7 +63,7 @@ gulp.task('watch', function watchTask(done) {
             });
         });
     $.watch(
-        paths.styles + '/**/*',
+        path.join(paths.styles, '**/*'),
         options,
         function sassWatch(files, cb) {
             watcherNotify('Start assets:sass');
@@ -69,7 +73,8 @@ gulp.task('watch', function watchTask(done) {
             });
         });
     $.watch(
-        paths.scripts + '/**/*', options,
+        path.join(paths.scripts, '**/*'),
+        options,
         function scriptsWatch(files, cb) {
             watcherNotify('Start assets:scripts');
             gulp.start('assets:scripts', function () {
@@ -109,9 +114,9 @@ gulp.task('cleanup', function cleanupTask() {
 
 gulp.task('smith', ['templates'], function smithTask(done) {
     var filterRenderable = $.filter('*.md');
-    var templatePath = paths.output + '/templates';
+    var templatePath = path.join(paths.output, 'templates');
 
-    gulp.src(paths.content + '/**/*')
+    gulp.src(path.join(paths.content, '**/*'))
         .pipe($.plumber())
             .pipe(filterRenderable)
                 .pipe($.frontMatter())
@@ -139,17 +144,17 @@ gulp.task('smith', ['templates'], function smithTask(done) {
 gulp.task('wiredep', ['wiredep:templates', 'wiredep:sass']);
 
 gulp.task('wiredep:templates', function wiredepTemplatesTask() {
-    return gulp.src(paths.templates + '/*.html')
+    return gulp.src(path.join(paths.templates, '*.html'))
         .pipe($.plumber())
             .pipe(wiredep())
         .pipe($.plumber.stop())
-        .pipe(gulp.dest(paths.templates + ''));
+        .pipe(gulp.dest(paths.templates));
 });
 
 gulp.task('wiredep:sass', function wiredepSassTask() {
     var destPath = paths.styles;
 
-    return gulp.src(paths.styles + '/main.scss')
+    return gulp.src(path.join(paths.styles, 'main.scss'))
         .pipe($.plumber())
             .pipe(wiredep())
         .pipe($.plumber.stop())
@@ -159,9 +164,9 @@ gulp.task('wiredep:sass', function wiredepSassTask() {
 gulp.task('assets', ['assets:sass', 'assets:scripts']);
 
 gulp.task('assets:sass', function sassTask(done) {
-    var destPath = paths.output + '/styles';
+    var destPath = path.join(paths.output, 'styles');
 
-    return $.rubySass(paths.styles + '/main.scss', { sourcemap: true })
+    return $.rubySass(path.join(paths.styles, 'main.scss'), { sourcemap: true })
         .pipe($.plumber())
             .pipe($.if(argv.dist, $.minifyCss()))
             .pipe($.sourcemaps.write())
@@ -170,11 +175,11 @@ gulp.task('assets:sass', function sassTask(done) {
 });
 
 gulp.task('assets:scripts', function scriptsTask() {
-    return gulp.src(paths.scripts + '/**/*.js')
+    return gulp.src(path.join(paths.scripts, '**/*.js'))
         .pipe($.sourcemaps.init())
             .pipe($.uglify())
         .pipe($.sourcemaps.write())
-        .pipe(gulp.dest(paths.output + '/scripts'));
+        .pipe(gulp.dest(path.join(paths.output, 'scripts')));
 });
 
 gulp.task('templates', ['assets'], function templatesTask(done) {
@@ -189,7 +194,7 @@ gulp.task('templates', ['assets'], function templatesTask(done) {
     var distPipe = lazypipe()
         .pipe($.minifyHtml, { empty: true });
 
-    return gulp.src(paths.templates + '/**/*')
+    return gulp.src(path.join(paths.templates, '**/*'))
         .pipe($.plumber())
         .pipe(assets)
             .pipe($.if(argv.dist, distAssetPipe()))
@@ -197,12 +202,12 @@ gulp.task('templates', ['assets'], function templatesTask(done) {
         .pipe(assets.restore())
         .pipe($.useref())
         .pipe($.if(argv.dist, distPipe()))
-        .pipe($.if('*.html', gulp.dest(paths.output + '/templates')));
+        .pipe($.if('*.html', gulp.dest(path.join(paths.output, 'templates'))));
 });
 
 gulp.task('publish', function publishTask() {
     argv.dist = true;
-    return gulp.src(paths.output + '/**/*')
+    return gulp.src(path.join(paths.output, '**/*'))
         .pipe($.ghPages())
         .on('end', function deployed() {
             gulp.start('cleanup');
@@ -211,7 +216,7 @@ gulp.task('publish', function publishTask() {
 
 gulp.task('lint', function lintTask() {
     return gulp.src([
-        paths.scripts + '/**/*.js',
+        path.join(paths.scripts, '**/*.js'),
         __filename
     ])
         .pipe($.jshint())
