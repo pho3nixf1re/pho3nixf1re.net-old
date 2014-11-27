@@ -86,14 +86,13 @@ gulp.task('watch', function watchTask(done) {
     done();
 });
 
-gulp.task('webserver', function webserverTask(done) {
-    gulp.src(paths.output)
+gulp.task('webserver', function webserverTask() {
+    return gulp.src(paths.output)
         .pipe($.webserver({
             host: argv.host,
             port: argv.port,
             livereload: true
         }));
-    done();
 });
 
 gulp.task('serve', ['build', 'watch', 'webserver']);
