@@ -50,7 +50,7 @@
   "requireCapitalizedConstructors": true,
   "disallowYodaConditions": true,
   "validateParameterSeparator": ", ",
-  "validateIndentation": 2,
+  "validateIndentation": 4,
   "excludeFiles": [
       "node_modules/**",
       "components/**",
