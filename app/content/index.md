@@ -10,4 +10,5 @@ template: landing.html
 
 [<span class="fa fa-github-square"></span>](https://github.com/pho3nixf1re)
 [<span class="fa fa-linkedin-square"></span>](https://www.linkedin.com/in/matthewturney)
+[<span class="fa fa-stack-overflow"></span>](https://careers.stackoverflow.com/pho3nixf1re)
 [<span class="fa fa-facebook-square"></span>](https://www.facebook.com/mturney)
