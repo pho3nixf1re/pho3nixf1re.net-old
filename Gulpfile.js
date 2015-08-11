@@ -1,5 +1,7 @@
 'use strict';
 
+require("harmonize")();
+
 var path = require('path');
 var _ = require('lodash');
 var async = require('async');
@@ -22,6 +24,8 @@ var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 var wiredep = require('wiredep').stream;
 var lazypipe = require('lazypipe');
+var vinylPaths = require('vinyl-paths');
+var del = require('del');
 
 // metalsmith
 var gulpsmith = require('gulpsmith');
@@ -108,11 +112,11 @@ gulp.task('build', ['cleanup'], function buildTask(done) {
 
 gulp.task('cleanup', function cleanupTask() {
     return gulp.src(paths.output, { read: false })
-        .pipe($.rimraf());
+        .pipe(vinylPaths(del));
 });
 
 gulp.task('smith', ['templates'], function smithTask(done) {
-    var filterRenderable = $.filter('*.md');
+    var filterRenderable = $.filter('*.md', { restore: true });
     var templatePath = path.join(paths.output, 'templates');
 
     gulp.src(path.join(paths.content, '**/*'))
@@ -130,13 +134,15 @@ gulp.task('smith', ['templates'], function smithTask(done) {
                         directory: templatePath
                     }))
                 )
-            .pipe(filterRenderable.restore())
+            .pipe(filterRenderable.restore)
         .pipe($.plumber.stop())
         .pipe(gulp.dest(paths.output))
         .on('end', function cleanForge() {
             gulp.src(templatePath, { read: false })
-                .pipe($.rimraf());
-            done();
+              .pipe(vinylPaths(del))
+              .on('end', function () {
+                  done();
+              });
         });
 });
 
