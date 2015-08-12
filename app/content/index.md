@@ -1,6 +1,6 @@
 ---
 title: Matthew Turney
-template: landing.html
+layout: landing.html
 ---
 
 #### pho3nixf1re

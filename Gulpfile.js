@@ -26,10 +26,11 @@ var wiredep = require('wiredep').stream;
 var lazypipe = require('lazypipe');
 var vinylPaths = require('vinyl-paths');
 var del = require('del');
+var through = require('through2');
 
 // metalsmith
 var gulpsmith = require('gulpsmith');
-var templates = require('metalsmith-templates');
+var layouts = require('metalsmith-layouts');
 
 var paths = {
     output: './.tmp',
@@ -123,13 +124,19 @@ gulp.task('smith', ['templates'], function smithTask(done) {
         .pipe($.plumber())
             .pipe(filterRenderable)
                 .pipe($.frontMatter())
-                .on('data', function (file) {
+                .pipe(through.obj(function (file, enc, callback) {
+                    if (!file.frontMatter) {
+                        callback();
+                    }
+
                     _.assign(file, file.frontMatter);
                     delete file.frontMatter;
-                })
+
+                    callback(null, file);
+                }))
                 .pipe($.marked({ gfm: true }))
                 .pipe(gulpsmith()
-                    .use(templates({
+                    .use(layouts({
                         engine: 'handlebars',
                         directory: templatePath
                     }))
@@ -137,12 +144,10 @@ gulp.task('smith', ['templates'], function smithTask(done) {
             .pipe(filterRenderable.restore)
         .pipe($.plumber.stop())
         .pipe(gulp.dest(paths.output))
-        .on('end', function cleanForge() {
+        .on('finish', function cleanForge() {
             gulp.src(templatePath, { read: false })
-              .pipe(vinylPaths(del))
-              .on('end', function () {
-                  done();
-              });
+              .pipe(vinylPaths(del));
+            done();
         });
 });
 
@@ -213,10 +218,7 @@ gulp.task('templates', ['assets'], function templatesTask(done) {
 gulp.task('publish', function publishTask() {
     argv.dist = true;
     return gulp.src(path.join(paths.output, '**/*'))
-        .pipe($.ghPages())
-        .on('end', function deployed() {
-            gulp.start('cleanup');
-        });
+        .pipe($.ghPages());
 });
 
 gulp.task('lint', function lintTask() {
